@@ -29,7 +29,7 @@ public class Reservation extends BaseEntity{
     private GameType gameType;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "customer_id", unique = true, nullable = false)
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
 }

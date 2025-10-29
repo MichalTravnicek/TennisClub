@@ -8,10 +8,8 @@ public class TestTool {
 
     /**
      * Generate Reservation without GAME TYPE
-     * @param court
-     * @return
+     *
      */
-
     public static Reservation createReservation(Court court, String name, String phone){
         Reservation reservation = new Reservation();
         reservation.setCourt(court);
@@ -23,6 +21,34 @@ public class TestTool {
         var end = LocalDateTime.of(2045, 5, 2, 0, 0);
         reservation.setStartTime(start);
         reservation.setEndTime(end);
+        return reservation;
+
+    }
+
+    /**
+     *  Generate Reservation without set start and end time
+     *
+     */
+    public static Reservation createReservation(Court court, String name, String phone, GameType gameType){
+        Reservation reservation = new Reservation();
+        reservation.setCourt(court);
+        Customer customer = new Customer();
+        customer.setName(name);
+        customer.setPhone(phone);
+        reservation.setCustomer(customer);
+        reservation.setGameType(gameType);
+        return reservation;
+    }
+
+    /**
+     *  Generate Reservation without set start and end time
+     *
+     */
+    public static Reservation createReservation(Court court, Customer customer, GameType gameType){
+        Reservation reservation = new Reservation();
+        reservation.setCourt(court);
+        reservation.setCustomer(customer);
+        reservation.setGameType(gameType);
         return reservation;
     }
 

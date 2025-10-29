@@ -1,9 +1,8 @@
-package com.example.tennis.persistence;
+package com.example.tennis.persistence.repository;
 
+import com.example.tennis.persistence.TestTool;
 import com.example.tennis.persistence.entity.*;
 import com.example.tennis.persistence.exception.NotFoundException;
-import com.example.tennis.persistence.repository.TennisDAO;
-import com.example.tennis.persistence.repository.TennisRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintViolationException;
 import org.assertj.core.api.Assertions;

@@ -40,7 +40,7 @@
         start_time timestamp(6) not null,
         deleted timestamp(6) with time zone,
         court_id bigint not null,
-        customer_id bigint not null unique,
+        customer_id bigint not null,
         game_type_id bigint not null,
         primary key (id)
     );
