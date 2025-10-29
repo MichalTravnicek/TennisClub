@@ -73,7 +73,7 @@ public class CourtServiceImpl implements CourtService {
         log.info("Updating court:" + court.getName());
 
         var updatedCourt = existingCourt.get();
-        if (StringUtils.hasLength(court.getName())){
+        if (StringUtils.hasLength(court.getName()) && !court.getName().equals(updatedCourt.getName())){
             var existingName = repository.findByProperty(Court.class, "name", court.getName());
             if (existingName.isPresent()){
                 throw new ConflictException("Court with name:" + court.getName() + " already exists");

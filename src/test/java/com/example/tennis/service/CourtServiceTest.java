@@ -137,12 +137,32 @@ class CourtServiceTest {
         CourtDTO dto2 = new CourtDTO(null, "ServiceCourt35", "Bahno22");
         var result2 = service.createCourt(dto2);
 
-        CourtDTO dto3 = new CourtDTO(result.getGlobalId(),"ServiceCourt32","");
+        CourtDTO dto3 = new CourtDTO(result2.getGlobalId(),"ServiceCourt32","");
 
         assertThrows(
                 ConflictException.class,
                 () -> service.updateCourt(dto3)
         );
+    }
+
+    @Test
+    public void updateCourtNoName() {
+        Surface surface = new Surface("Bahno5",50L);
+        repository.save(surface);
+        Surface surface2 = new Surface("Bahno55",60L);
+        repository.save(surface2);
+
+        CourtDTO dto = new CourtDTO(null, "ServiceCourt52", "Bahno5");
+        var result = service.createCourt(dto);
+
+        CourtDTO dto3 = new CourtDTO(result.getGlobalId(),"","");
+
+        var updated = service.updateCourt(dto3);
+
+        Assertions.assertThat(updated).isNotNull();
+        Assertions.assertThat(updated.getName()).isEqualTo("ServiceCourt52");
+        Assertions.assertThat(updated.getSurface()).isEqualTo("Bahno5");
+        System.err.println(updated);
     }
 
     @Test
@@ -164,11 +184,11 @@ class CourtServiceTest {
         CourtDTO dto = new CourtDTO(null, "ServiceCourt22","Bahno3");
         var result = service.createCourt(dto);
 
-        CourtDTO dto2 = new CourtDTO(result.getGlobalId(),"ServiceCourt7","Bahno4");
+        CourtDTO dto2 = new CourtDTO(result.getGlobalId(),"","Bahno4");
         var updated = service.updateCourt(dto2);
 
         Assertions.assertThat(updated).isNotNull();
-        Assertions.assertThat(updated.getName()).isEqualTo("ServiceCourt7");
+        Assertions.assertThat(updated.getName()).isEqualTo("ServiceCourt22");
         Assertions.assertThat(updated.getSurface()).isEqualTo("Bahno4");
         System.err.println(updated);
     }
@@ -188,7 +208,7 @@ class CourtServiceTest {
         repository.save(surface);
         CourtDTO dto = new CourtDTO(null, "ServiceCourt25","Bahno5");
         var result = service.createCourt(dto);
-        CourtDTO dto2 = new CourtDTO(null, "ServiceCourt25","Pisek4");
+        CourtDTO dto2 = new CourtDTO(result.getGlobalId(), "ServiceCourt25","Pisek4");
         assertThrows(
                 NotFoundException.class,
                 ()-> service.updateCourt(dto2)
