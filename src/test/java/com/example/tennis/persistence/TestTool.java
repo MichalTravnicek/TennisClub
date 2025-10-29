@@ -52,10 +52,10 @@ public class TestTool {
         return reservation;
     }
 
-    public static Court createCourt(String name, String surfaceName, Long surfaceMultiply){
+    public static Court createCourt(String name, String surfaceName, Long surfacePrice){
         Surface surface = new Surface();
         surface.setName(surfaceName);
-        surface.setPricePerMinute(surfaceMultiply);
+        surface.setPricePerMinute(surfacePrice);
         Court court = new Court();
         court.setName(name);
         court.setSurface(surface);

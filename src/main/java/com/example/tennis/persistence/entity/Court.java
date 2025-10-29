@@ -15,7 +15,7 @@ public class Court extends BaseEntity{
     private String name;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "surface_id", nullable = false, unique = true)
+    @JoinColumn(name = "surface_id", nullable = false)
     private Surface surface;
 
 }

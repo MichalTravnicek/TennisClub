@@ -7,7 +7,7 @@
         global_id uuid not null unique,
         name varchar(255) not null unique,
         deleted timestamp(6) with time zone,
-        surface_id bigint not null unique,
+        surface_id bigint not null,
         primary key (id)
     );
 
