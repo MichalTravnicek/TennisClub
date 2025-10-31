@@ -93,7 +93,7 @@ public class ReservationServiceImpl implements ReservationService {
         var overlap = search.testScheduleOverlap(reservation.getCourt(),
                 reservation.getStartTime(),reservation.getEndTime(), excludeId);
         if (overlap) {
-            throw new ConflictException("Court reservation is in conflict with existing reservation");
+            throw new ConflictException("Reservation is in conflict with existing reservation");
         }
     }
 

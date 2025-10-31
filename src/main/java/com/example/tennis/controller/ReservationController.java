@@ -119,13 +119,8 @@ public class ReservationController {
                             }
                             """)
             @RequestBody @Valid ReservationDTO reservation) {
-        var updateResult = service.updateReservation(reservation);
-        if (updateResult != null) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-
+        service.updateReservation(reservation);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @Operation(tags = "4 - Delete",

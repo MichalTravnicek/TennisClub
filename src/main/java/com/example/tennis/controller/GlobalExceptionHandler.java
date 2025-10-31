@@ -1,8 +1,10 @@
 package com.example.tennis.controller;
 
 import com.example.tennis.persistence.exception.NotFoundException;
+import com.example.tennis.service.exception.BadArgumentException;
 import com.example.tennis.service.exception.ConflictException;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
@@ -33,8 +35,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<Object> handleConflictException(Exception ex, WebRequest request) {
+        System.err.println(ex.getMessage());
         final ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Conflict with existing item");
         return handleExceptionInternal(ex, detail, new HttpHeaders(), HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler({BadArgumentException.class, ConstraintViolationException.class})
+    public ResponseEntity<Object> handleBadArgumentException(Exception ex, WebRequest request) {
+        System.err.println(ex.getMessage());
+        final ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Bad request");
+        return handleExceptionInternal(ex, detail, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(Exception.class)
@@ -73,8 +83,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public static String getExceptionMessage(Exception ex){
         return switch (ex) {
             case NoResourceFoundException e -> "";
-            case ConflictException e -> e.getMessage().contains("Detail") ? e.getMessage()
-                    .substring(e.getMessage().indexOf("Detail")) : "";
             case HandlerMethodValidationException e -> {
                 var errors = e.getParameterValidationResults().stream()
                         .map(error->error.getMethodParameter().getParameterName()+":"+ error.getResolvableErrors().getFirst()
