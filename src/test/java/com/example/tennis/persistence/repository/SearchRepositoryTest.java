@@ -57,6 +57,10 @@ class SearchRepositoryTest {
         tennisDAO.delete(reservation2);
         var result7 = searchDAO.testScheduleOverlap(court.getName(), start.plusDays(3), end.plusDays(5));
         Assertions.assertThat(result7).isFalse();
+        var result8 = searchDAO.testScheduleOverlap(court.getName(), start.minusDays(8), end);
+        Assertions.assertThat(result8).isTrue();
+        var result9 = searchDAO.testScheduleOverlap(court.getName(), start.minusDays(8), end, reservation.getId());
+        Assertions.assertThat(result9).isFalse();
     }
 
 

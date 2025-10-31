@@ -14,6 +14,7 @@ public class Court extends BaseEntity{
     @Column(unique = true)
     private String name;
 
+    @NotNull
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "surface_id", nullable = false)
     private Surface surface;

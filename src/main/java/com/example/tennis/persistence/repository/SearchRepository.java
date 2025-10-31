@@ -16,14 +16,23 @@ public class SearchRepository implements SearchDAO{
     @PersistenceContext
     private EntityManager entityManager;
 
+    public Boolean testScheduleOverlap(@Nonnull String courtName, @Nonnull LocalDateTime fromTime,
+                                       @Nonnull LocalDateTime toTime){
+        return testScheduleOverlap(courtName, fromTime, toTime, null);
+    }
+
     @Override
-    public Boolean testScheduleOverlap(@Nonnull String courtName, @Nonnull LocalDateTime fromTime, @Nonnull LocalDateTime toTime){
-        return entityManager.createQuery("SELECT EXISTS (SELECT 1 FROM Reservation r " +
+    public Boolean testScheduleOverlap(@Nonnull String courtName, @Nonnull LocalDateTime fromTime,
+                                       @Nonnull LocalDateTime toTime, @Nullable Long id){
+        return entityManager.createQuery("SELECT EXISTS (SELECT r FROM Reservation r " +
                         "WHERE (r.court.name = :courtName) " +
-                        "AND (:fromTime < r.endTime AND r.startTime < :toTime))", Boolean.class)
+                        "AND (:fromTime < r.endTime AND r.startTime < :toTime) " +
+                        "AND (:reservationId IS NULL OR r.id != :reservationId)" +
+                        ")", Boolean.class)
                 .setParameter("courtName", courtName)
                 .setParameter("fromTime", fromTime)
                 .setParameter("toTime", toTime)
+                .setParameter("reservationId", id)
                 .getSingleResult();
     }
 

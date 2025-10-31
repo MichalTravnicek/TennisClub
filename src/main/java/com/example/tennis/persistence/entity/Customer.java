@@ -3,14 +3,14 @@ package com.example.tennis.persistence.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
 @EqualsAndHashCode(callSuper = true)
 @Data
 @ToString(callSuper = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class Customer extends BaseEntity{
 
     @NotNull

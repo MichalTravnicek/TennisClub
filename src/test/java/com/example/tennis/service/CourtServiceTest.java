@@ -59,6 +59,18 @@ class CourtServiceTest {
     }
 
     @Test
+    public void getAllCourts() {
+        Court court = TestTool.createCourt("ServiceCourt56","DirtJJJ",100L);
+        Court court2 = TestTool.createCourt("ServiceCourt59","DirtHHH",100L);
+        repository.save(court);
+        repository.save(court2);
+        var result = service.getAllCourts();
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.size()).isEqualTo(2);
+        Assertions.assertThat(result).extracting(CourtDTO::getName).contains("ServiceCourt56","ServiceCourt59");
+    }
+
+    @Test
     public void getCourtNoResult() {
         CourtDTO dto = new CourtDTO(null,null,null);
         assertThrows(NotFoundException.class,

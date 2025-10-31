@@ -129,6 +129,11 @@
                     <argLine>
                         -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
                         -Xshare:off
+                        -Xverify:none
+                        -XX:+UseSerialGC
+                        -XX:+TieredCompilation
+                        -XX:TieredStopAtLevel=1
+                        -Dspring.jmx.enabled=false
                     </argLine>
                 </configuration>
             </plugin>

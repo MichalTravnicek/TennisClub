@@ -9,6 +9,11 @@ import java.util.List;
 
 public interface SearchDAO {
 
+    /**
+     * @param id - id of entity to exclude from comparing
+     */
+    Boolean testScheduleOverlap(@Nonnull String courtName, @Nonnull LocalDateTime fromTime, @Nonnull LocalDateTime toTime, @Nullable Long id);
+
     Boolean testScheduleOverlap(@Nonnull String courtName, @Nonnull LocalDateTime fromTime, @Nonnull LocalDateTime toTime);
 
     List<Reservation> getReservationsForCourt(@Nonnull String courtName);

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+
 
 @Slf4j
 @Service
@@ -23,6 +25,12 @@ public class CourtServiceImpl implements CourtService {
 
     private final TennisDAO repository;
     private final SearchDAO search;
+
+    @Override
+    public List<CourtDTO> getAllCourts() {
+        var mapper = EntityMapper.INSTANCE;
+        return repository.getAll(Court.class).stream().map(mapper::toDto).toList();
+    }
 
     @Override
     public CourtDTO getCourt(CourtDTO court) {
@@ -93,6 +101,7 @@ public class CourtServiceImpl implements CourtService {
         return EntityMapper.INSTANCE.toDto(updatedCourt);
     }
 
+    @Transactional
     @Override
     public void deleteCourt(CourtDTO court) {
         Court courtEntity = findByIdOrName(court);

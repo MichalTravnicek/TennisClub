@@ -19,7 +19,7 @@ public class Reservation extends BaseEntity{
     private LocalDateTime endTime;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "court_id")
+    @JoinColumn(name = "court_id", nullable = false)
     @NotNull
     private Court court;
 
@@ -29,7 +29,10 @@ public class Reservation extends BaseEntity{
     private GameType gameType;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "customer_id")
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
+
+    @Transient
+    private Float price;
 
 }
