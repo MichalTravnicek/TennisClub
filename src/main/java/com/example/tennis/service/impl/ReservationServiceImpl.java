@@ -16,6 +16,7 @@ import com.example.tennis.service.exception.BadArgumentException;
 import com.example.tennis.service.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -33,6 +34,9 @@ public class ReservationServiceImpl implements ReservationService {
     private final TennisDAO repository;
     private final SearchDAO search;
     private EntityMapper mapper = EntityMapper.INSTANCE;
+
+    @Value("${tennis.override.ids}")
+    private boolean overrideIds;
 
     @Override
     public List<ReservationDTO> getAllReservations() {
@@ -93,10 +97,20 @@ public class ReservationServiceImpl implements ReservationService {
         }
     }
 
-    private void validateStringPropertyPresent(String name, String value){
-        if (!StringUtils.hasLength(value)){
-            log.error(name +" is missing in the request");
-            throw new BadArgumentException(name + " is missing in the request");
+    private void missingPropertyError(String name){
+        log.error(name + " is missing in the request");
+        throw new BadArgumentException(name + " is missing in the request");
+    }
+
+    private void validateStringPropertyPresent(String name, String value) {
+        if (!StringUtils.hasLength(value)) {
+            missingPropertyError(name);
+        }
+    }
+
+    private void validateObjectPropertyPresent(String name, Object value) {
+        if (value == null) {
+            missingPropertyError(name);
         }
     }
 
@@ -107,6 +121,8 @@ public class ReservationServiceImpl implements ReservationService {
         validateStringPropertyPresent("Court name", reservation.getCourt());
         validateStringPropertyPresent("Customer phone", reservation.getPhone());
         validateStringPropertyPresent("Game type", reservation.getGameType());
+        validateObjectPropertyPresent("Start time", reservation.getStartTime());
+        validateObjectPropertyPresent("End time", reservation.getEndTime());
 
         Reservation entity = mapper.toEntity(reservation);
 
@@ -127,7 +143,15 @@ public class ReservationServiceImpl implements ReservationService {
             entity.setCustomer(customer);
         }
 
-        entity.setGlobalId(null);
+        if (overrideIds) {
+            entity.setGlobalId(null);
+        } else {
+            var existingId = repository.findByProperty(Reservation.class,"globalId", reservation.getGlobalId());
+            if (existingId.isPresent()) {
+                throw new ConflictException("Reservation with id: " + reservation.getGlobalId() + " already exists");
+            }
+        }
+
         log.info("Creating reservation:");
         repository.save(entity);
         var pricedEntity = calculateCost(entity);

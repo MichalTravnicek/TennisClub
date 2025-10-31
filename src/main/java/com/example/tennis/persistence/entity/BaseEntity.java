@@ -15,7 +15,9 @@ public class BaseEntity {
 
     @PrePersist
     public void persist(){
-        globalId = UUID.randomUUID();
+        if (globalId == null) {
+            globalId = UUID.randomUUID();
+        }
     }
 
     @Id

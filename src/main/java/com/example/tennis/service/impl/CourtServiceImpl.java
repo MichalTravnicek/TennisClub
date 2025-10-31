@@ -11,6 +11,7 @@ import com.example.tennis.service.CourtService;
 import com.example.tennis.service.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -25,6 +26,9 @@ public class CourtServiceImpl implements CourtService {
 
     private final TennisDAO repository;
     private final SearchDAO search;
+
+    @Value("${tennis.override.ids}")
+    private boolean overrideIds;
 
     @Override
     public List<CourtDTO> getAllCourts() {
@@ -63,7 +67,16 @@ public class CourtServiceImpl implements CourtService {
         if (existingSurface.isEmpty()) {
             throw new NotFoundException("Surface does not exist: " + court.getSurface());
         }
-        courtEntity.setGlobalId(null);
+
+        if (overrideIds) {
+            courtEntity.setGlobalId(null);
+        } else {
+            var existingCourtId = repository.findByProperty(Court.class,"globalId",court.getGlobalId());
+            if (existingCourtId.isPresent()) {
+                throw new ConflictException("Court with id: " + court.getGlobalId() + " already exists");
+            }
+        }
+
         courtEntity.setSurface(existingSurface.get());
         log.info("Creating court:" + court.getName());
         repository.save(courtEntity);
