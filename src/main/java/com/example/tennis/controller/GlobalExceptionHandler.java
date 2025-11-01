@@ -3,11 +3,11 @@ package com.example.tennis.controller;
 import com.example.tennis.persistence.exception.NotFoundException;
 import com.example.tennis.service.exception.BadArgumentException;
 import com.example.tennis.service.exception.ConflictException;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -55,29 +55,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
-        if (request instanceof ServletWebRequest servletWebRequest) {
-            HttpServletResponse response = servletWebRequest.getResponse();
-            if (response != null && response.isCommitted()) {
-                if (this.logger.isWarnEnabled()) {
-                    this.logger.warn("Response already committed. Ignoring: " + String.valueOf(ex));
-                }
-
-                return null;
-            }
-        }
-
         if (body == null && ex instanceof org.springframework.web.ErrorResponse errorResponse) {
             body = errorResponse.updateAndGetBody(getMessageSource(), LocaleContextHolder.getLocale());
         }
 
         if (body instanceof ProblemDetail detail){
             String exceptionMessage = getExceptionMessage(ex);
-            if (exceptionMessage!= null && !exceptionMessage.isBlank()) {
+            if (StringUtils.hasLength(exceptionMessage)) {
                 detail.setProperty("exception", ex.getClass().getSimpleName());
                 detail.setProperty("message", exceptionMessage);
             }
         }
-        return this.createResponseEntity(body, headers, statusCode, request);
+        return super.handleExceptionInternal(ex,body,headers,statusCode,request);
     }
 
     public static String getExceptionMessage(Exception ex){

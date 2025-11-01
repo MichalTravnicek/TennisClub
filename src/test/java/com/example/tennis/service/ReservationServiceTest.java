@@ -81,7 +81,7 @@ class ReservationServiceTest {
     public void createReservation() {
         Court court = TestTool.createCourt("ReservationCourt1", "DirtAAA", 100L);
         repository.save(court);
-
+        ReflectionTestUtils.setField(service,"overrideIds",true);
         ReservationDTO reservationRequest = new ReservationDTO(
                 null,"ReservationCourt1","Singles",
                 LocalDateTime.of(2025,12,12,0,0),
@@ -89,6 +89,8 @@ class ReservationServiceTest {
                 "777111333", "FrantaJetel2", null);
 
         var result = service.createReservation(reservationRequest);
+        ReflectionTestUtils.setField(service,"overrideIds",false);
+
         Assertions.assertThat(result).isNotNull();
         Assertions.assertThat(result.getGlobalId()).isNotNull();
         Assertions.assertThat(result.getGameType()).isEqualTo("Singles");
@@ -173,6 +175,35 @@ class ReservationServiceTest {
 
         assertThrows(BadArgumentException.class,
                 ()-> service.createReservation(reservationRequest));
+    }
+
+    @Test
+    public void createReservationMissingTimeRange() {
+        Court court = TestTool.createCourt("ReservationCourt79", "DirtZZZ", 100L);
+        repository.save(court);
+
+        ReservationDTO reservationRequest = new ReservationDTO(
+                null,"ReservationCourt59","Singles",
+                null, null,
+                "777888555", "FrantaJetel599", null);
+
+        assertThrows(BadArgumentException.class,
+                ()-> service.createReservation(reservationRequest));
+    }
+
+    @Test
+    public void createReservationOverrideId(){
+        Court court = TestTool.createCourt("ReservationCourt29", "DirtGGG", 100L);
+        GameType gameType = getTestGameType();
+        var reservation = TestTool.createReservation(court, "HonzaJelen","777123456",gameType);
+        reservation.setStartTime(LocalDateTime.of(2025,12,12,0,0));
+        reservation.setEndTime(LocalDateTime.of(2025,12,13,0,0));
+        repository.save(reservation);
+        var reservationDto = EntityMapper.INSTANCE.toDto(reservation);
+        reservationDto.setStartTime(LocalDateTime.of(2030,12,12,0,0));
+        reservationDto.setEndTime(LocalDateTime.of(2030,12,13,0,0));
+        assertThrows(ConflictException.class,
+                ()->service.createReservation(reservationDto));
     }
 
     @Test
@@ -266,7 +297,7 @@ class ReservationServiceTest {
         repository.save(reservation);
 
         ReservationDTO updateRequest = new ReservationDTO(
-                reservation.getGlobalId(),null,"Singles",
+                reservation.getGlobalId(),"ReservationCourt1235","Singles",
                 null,
                 null,
                 "777111999", null, null);
