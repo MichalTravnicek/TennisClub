@@ -34,6 +34,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final SearchDAO search;
     private EntityMapper mapper = EntityMapper.INSTANCE;
 
+    // If true the supplied entity id is ignored
     @Value("${tennis.override.ids}")
     private boolean overrideIds;
 
@@ -73,7 +74,7 @@ public class ReservationServiceImpl implements ReservationService {
     private void validateTimeProperties(ReservationDTO reservation, Long excludeId){
         if (!reservation.getStartTime().isBefore(reservation.getEndTime())){
             throw new BadArgumentException("End time :" + reservation.getEndTime() +
-                    " is not after start time" + reservation.getStartTime());
+                    " is not after start time :" + reservation.getStartTime());
         }
         var overlap = search.testScheduleOverlap(reservation.getCourt(),
                 reservation.getStartTime(),reservation.getEndTime(), excludeId);
@@ -171,10 +172,17 @@ public class ReservationServiceImpl implements ReservationService {
         trySetProperty(reservation.getGameType(), existingEntity.getGameType().getName(),
                 GameType.class,"name", existingEntity::setGameType);
 
-        if (StringUtils.hasLength(reservation.getCourt())
-                && reservation.getStartTime() != null
-                && reservation.getEndTime() != null
-        ) {
+        if (reservation.getStartTime() != null || reservation.getEndTime() != null) {
+            if (reservation.getStartTime() == null){
+                reservation.setStartTime(existingEntity.getStartTime());
+            }
+            if (reservation.getEndTime() == null){
+                reservation.setEndTime(existingEntity.getEndTime());
+            }
+            if (!StringUtils.hasLength(reservation.getCourt())){
+                reservation.setCourt(existingEntity.getCourt().getName());
+            }
+
             validateTimeProperties(reservation, existingEntity.getId());
             existingEntity.setStartTime(reservation.getStartTime());
             existingEntity.setEndTime(reservation.getEndTime());

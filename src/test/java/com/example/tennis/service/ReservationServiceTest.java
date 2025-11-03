@@ -104,6 +104,21 @@ class ReservationServiceTest {
     }
 
     @Test
+    public void createReservationUnknownUser() {
+        Court court = TestTool.createCourt("ReservationCourt242", "DirtEEE", 100L);
+        repository.save(court);
+        ReservationDTO reservationRequest = new ReservationDTO(
+                null,court.getName(),"Singles",
+                LocalDateTime.of(2025,6,12,0,0),
+                LocalDateTime.of(2025,6,15,0,0),
+                "777555333", null, null);
+
+        var result =  service.createReservation(reservationRequest);
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getCustomer()).isEqualTo("Unknown");
+    }
+
+    @Test
     public void createReservationBadCourt() {
         ReservationDTO reservationRequest = new ReservationDTO(
                 null,"BadCourt","Singles",
@@ -181,7 +196,7 @@ class ReservationServiceTest {
     }
 
     @Test
-    public void createReservationOverrideId(){
+    public void createReservationIdConflict(){
         Court court = TestTool.createCourt("ReservationCourt29", "DirtGGG", 100L);
         GameType gameType = getTestGameType();
         var reservation = TestTool.createReservation(court, "HonzaJelen","777123456",gameType);
@@ -259,31 +274,27 @@ class ReservationServiceTest {
                 ()->service.updateReservation(reservationRequest));
     }
 
-    @Test
-    public void updateReservationOnlyCustomer() {
+    private Reservation createReservationForUpdate(){
         Court court = TestTool.createCourt("ReservationCourt1235", "Dirty2", 200L);
         repository.save(court);
 
         Customer customer = new Customer("FrantaJetel2567","777555777");
         repository.save(customer);
 
-        Customer customer2 = new Customer("FrantaPalicka","777111999");
-        repository.save(customer2);
-
         GameType gameType = getTestGameType();
-
-        ReservationDTO reservationRequest = new ReservationDTO(
-                null,"ReservationCourt1235","Singles",
-                LocalDateTime.of(2025,12,12,0,0),
-                LocalDateTime.of(2025,12,15,0,0),
-                "777555777", "FrantaJetel2567", null);
-
-        service.createReservation(reservationRequest);
-        
         Reservation reservation = TestTool.createReservation(court,customer,gameType);
         reservation.setStartTime(LocalDateTime.of(2025,12,16,0,0));
         reservation.setEndTime(LocalDateTime.of(2025,12,17,0,0));
         repository.save(reservation);
+        return reservation;
+    }
+
+    @Test
+    public void updateReservationOnlyCustomer() {
+        var reservation = createReservationForUpdate();
+
+        Customer customer2 = new Customer("FrantaPalicka","777111999");
+        repository.save(customer2);
 
         ReservationDTO updateRequest = new ReservationDTO(
                 reservation.getGlobalId(),"ReservationCourt1235","Singles",
@@ -293,10 +304,66 @@ class ReservationServiceTest {
 
         var result = service.updateReservation(updateRequest);
         Assertions.assertThat(result).isNotNull();
-        Assertions.assertThat(result.getCustomer()).isEqualTo(customer2.getName());
+        Assertions.assertThat(result.getCustomer()).isEqualTo("FrantaPalicka");
+        Assertions.assertThat(result.getStartTime()).isEqualTo(reservation.getStartTime());
+        Assertions.assertThat(result.getEndTime()).isEqualTo(reservation.getEndTime());
+        Assertions.assertThat(result.getCourt()).isEqualTo("ReservationCourt1235");
+    }
+
+    @Test
+    public void updateReservationOnlyCourt() {
+        var reservation = createReservationForUpdate();
+        Court court = new Court("ReservationCourt9995", reservation.getCourt().getSurface());
+        repository.save(court);
+
+        ReservationDTO updateRequest = new ReservationDTO(
+                reservation.getGlobalId(), court.getName(),"Singles",
+                null,
+                null,
+                null, null, null);
+
+        var result = service.updateReservation(updateRequest);
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getCustomer()).isEqualTo(reservation.getCustomer().getName());
         Assertions.assertThat(result.getStartTime()).isEqualTo(reservation.getStartTime());
         Assertions.assertThat(result.getEndTime()).isEqualTo(reservation.getEndTime());
         Assertions.assertThat(result.getCourt()).isEqualTo(court.getName());
+    }
+
+    @Test
+    public void updateReservationOnlyPartialTime() {
+        var reservation = createReservationForUpdate();
+
+        ReservationDTO updateRequest = new ReservationDTO(
+                reservation.getGlobalId(), null,"Singles",
+                LocalDateTime.of(2025,12,10,0,0),
+                null,
+                null, null, null);
+
+        var result = service.updateReservation(updateRequest);
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getCustomer()).isEqualTo(reservation.getCustomer().getName());
+        Assertions.assertThat(result.getStartTime()).isEqualTo(updateRequest.getStartTime());
+        Assertions.assertThat(result.getEndTime()).isEqualTo(reservation.getEndTime());
+        Assertions.assertThat(result.getCourt()).isEqualTo(reservation.getCourt().getName());
+    }
+
+    @Test
+    public void updateReservationOnlyPartialTime2() {
+        var reservation = createReservationForUpdate();
+
+        ReservationDTO updateRequest = new ReservationDTO(
+                reservation.getGlobalId(), null,"Singles",
+                null,
+                LocalDateTime.of(2025,12,18,0,0),
+                null, null, null);
+
+        var result = service.updateReservation(updateRequest);
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getCustomer()).isEqualTo(reservation.getCustomer().getName());
+        Assertions.assertThat(result.getStartTime()).isEqualTo(reservation.getStartTime());
+        Assertions.assertThat(result.getEndTime()).isEqualTo(updateRequest.getEndTime());
+        Assertions.assertThat(result.getCourt()).isEqualTo(reservation.getCourt().getName());
     }
 
     @Test

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -92,12 +93,27 @@ class CourtServiceTest {
         Surface surface = new Surface("Bahno",50L);
         repository.save(surface);
         CourtDTO dto = new CourtDTO(null, "ServiceCourt2","Bahno");
+        ReflectionTestUtils.setField(service,"overrideIds",true);
         var result = service.createCourt(dto);
+        ReflectionTestUtils.setField(service,"overrideIds",false);
         System.err.println(result);
         Assertions.assertThat(result).isNotNull();
         Assertions.assertThat(result.getGlobalId()).isNotNull();
         Assertions.assertThat(result.getName()).isEqualTo("ServiceCourt2");
         Assertions.assertThat(result.getSurface()).isEqualTo("Bahno");
+    }
+
+    @Test
+    public void createCourtIdConflict() {
+        Surface surface = new Surface("Bahno2",50L);
+        repository.save(surface);
+        System.err.println(surface);
+        CourtDTO dto = new CourtDTO(null, "ServiceCourt21","Bahno2");
+        ReflectionTestUtils.setField(service,"overrideIds",false);
+        var court = service.createCourt(dto);
+        CourtDTO dto2 = new CourtDTO(court.getGlobalId(), "ServiceCourt22","Bahno2");
+        assertThrows(ConflictException.class,
+                () ->service.createCourt(dto2));
     }
 
     @Test

@@ -3,10 +3,12 @@ package com.example.tennis.controller;
 import com.example.tennis.persistence.exception.NotFoundException;
 import com.example.tennis.service.exception.BadArgumentException;
 import com.example.tennis.service.exception.ConflictException;
+import jakarta.annotation.Nonnull;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
+import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -54,7 +56,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
+    protected ResponseEntity<Object> handleExceptionInternal(@NonNull Exception ex, @Nullable Object body,
+                                                             @Nonnull HttpHeaders headers, @NonNull HttpStatusCode statusCode,
+                                                             @NonNull WebRequest request) {
         if (body == null && ex instanceof org.springframework.web.ErrorResponse errorResponse) {
             body = errorResponse.updateAndGetBody(getMessageSource(), LocaleContextHolder.getLocale());
         }

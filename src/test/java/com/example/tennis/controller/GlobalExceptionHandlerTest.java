@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.validation.BindException;
@@ -140,5 +141,11 @@ public class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.detail").value("Internal server error"))
                 .andExpect(jsonPath("$.exception").value("Exception"))
                 .andExpect(jsonPath("$.message").value("Something unexpected happened"));
+    }
+
+    @Test
+    public void testEmptyBody(){
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        handler.handleExceptionInternal(null,null,null, HttpStatusCode.valueOf(400),null);
     }
 }

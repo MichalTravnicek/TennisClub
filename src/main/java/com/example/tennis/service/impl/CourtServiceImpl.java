@@ -27,6 +27,7 @@ public class CourtServiceImpl implements CourtService {
     private final TennisDAO repository;
     private final SearchDAO search;
 
+    // If true the supplied entity id is ignored
     @Value("${tennis.override.ids}")
     private boolean overrideIds;
 
