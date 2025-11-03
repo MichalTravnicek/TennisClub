@@ -3,9 +3,12 @@ package com.example.tennis.persistence.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
+@Slf4j
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
@@ -32,7 +35,19 @@ public class Reservation extends BaseEntity{
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @Transient
-    private Float price;
+    public Float getPrice(){
+        if (startTime == null || endTime == null || gameType == null || court == null){
+            return null;
+        }
+        var multiplier = gameType.getPriceMultiplier();
+        var basePrice = court.getSurface().getPricePerMinute();
+        long durationInMinutes = getStartTime().until(getEndTime(), ChronoUnit.MINUTES);
+        if (!(multiplier > 0) || !(durationInMinutes > 0) || !(basePrice > 0)){
+            log.error("Cannot calculate total price: multiplier:" + multiplier +
+                    " duration:" + durationInMinutes + " price:" + basePrice);
+            throw new ArithmeticException("Cannot calculate price");
+        }
 
+        return gameType.getPriceMultiplier()*court.getSurface().getPricePerMinute() * durationInMinutes;
+    }
 }

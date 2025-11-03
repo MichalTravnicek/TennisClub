@@ -53,9 +53,74 @@ class EntityMapperTest {
         reservation.setGlobalId(UUID.fromString("ab36a118-6c30-4e1a-b49a-2e6eeb65cd83"));
         GameType gameType = new GameType();
         ReflectionTestUtils.setField(gameType,"name","GameType1");
+        ReflectionTestUtils.setField(gameType,"priceMultiplier",1.5f);
         reservation.setGameType(gameType);
         var result2 = EntityMapper.INSTANCE.toDto(reservation);
+        Assertions.assertThat(result2).isNotNull();
         System.err.println(result2);
     }
 
+    @Test
+    public void testReservationFailCalculate() {
+        var reservation = createReservation();
+        reservation.setEndTime(null);
+        var result = EntityMapper.INSTANCE.toDto(reservation);
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getPrice()).isNull();
+    }
+
+    @Test
+    public void testReservationFailCalculate2() {
+        var reservation = createReservation();
+        reservation.setCourt(null);
+        var result = EntityMapper.INSTANCE.toDto(reservation);
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getPrice()).isNull();
+    }
+
+    @Test
+    public void testReservationFailCalculate3() {
+        var reservation = createReservation();
+        reservation.setGameType(null);
+        var result = EntityMapper.INSTANCE.toDto(reservation);
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getPrice()).isNull();
+    }
+
+    @Test
+    public void testReservationFailCalculate5() {
+        var reservation = createReservation();
+        ReflectionTestUtils.setField(reservation.getGameType(),"priceMultiplier",0);
+        org.junit.jupiter.api.Assertions.assertThrows(ArithmeticException.class,
+                () -> EntityMapper.INSTANCE.toDto(reservation));
+    }
+
+    @Test
+    public void testReservationFailCalculate6() {
+        var reservation = createReservation();
+        ReflectionTestUtils.setField(reservation.getCourt().getSurface(), "pricePerMinute", 0L);
+        org.junit.jupiter.api.Assertions.assertThrows(ArithmeticException.class,
+                () -> EntityMapper.INSTANCE.toDto(reservation));
+    }
+
+    @Test
+    public void testReservationFailCalculate7() {
+        var reservation = createReservation();
+        reservation.setStartTime(LocalDateTime.now());
+        reservation.setEndTime(LocalDateTime.now());
+        org.junit.jupiter.api.Assertions.assertThrows(ArithmeticException.class,
+                () -> EntityMapper.INSTANCE.toDto(reservation));
+    }
+
+    private Reservation createReservation(){
+        Court court = TestTool.createCourt("Zeee court","Flat surface",150L);
+        var reservation = TestTool.createReservation(court,"Franta","777101101");
+        reservation.setGlobalId(UUID.fromString("ab36a118-6c30-4e1a-b49a-2e6eeb65cd83"));
+        GameType gameType = new GameType();
+        ReflectionTestUtils.setField(gameType,"name","GameType1");
+        ReflectionTestUtils.setField(gameType,"priceMultiplier",1.5f);
+        reservation.setGameType(gameType);
+        return reservation;
+    }
 }
+

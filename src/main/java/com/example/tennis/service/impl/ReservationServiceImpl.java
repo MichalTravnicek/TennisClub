@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -41,15 +40,14 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<ReservationDTO> getAllReservations() {
         return repository.getAll(Reservation.class).stream()
-                .map(this::calculateCost)
                 .map(mapper::toDto)
                 .toList();
     }
 
     @Override
-    public List<ReservationDTO> getAllReservationsForCourt(CourtSearch court) {
-        repository.getByProperty(Court.class, "name", court.getName());
-        return search.getReservationsForCourt(court.getName()).stream().map(mapper::toDto).toList();
+    public List<ReservationDTO> getAllReservationsForCourt(CourtSearch courtSearch) {
+        repository.getByProperty(Court.class, "name", courtSearch.getCourt());
+        return search.getReservationsForCourt(courtSearch.getCourt()).stream().map(mapper::toDto).toList();
     }
 
     @Override
@@ -61,7 +59,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public ReservationDTO getReservation(ReservationDTO reservation) {
-        return mapper.toDto(calculateCost(getByGlobalId(reservation)));
+        return mapper.toDto(getByGlobalId(reservation));
     }
 
     private Reservation getByGlobalId(ReservationDTO reservation){
@@ -70,19 +68,6 @@ public class ReservationServiceImpl implements ReservationService {
             return result.orElseThrow(() -> new NotFoundException("Reservation: " + reservation.getGlobalId() + " not found"));
         }
         throw new NotFoundException("No reservation id specified");
-    }
-
-    private Reservation calculateCost(Reservation reservation) {
-        float multiplier = reservation.getGameType().getPriceMultiplier();
-        long durationInMinutes = reservation.getStartTime().until(reservation.getEndTime(), ChronoUnit.MINUTES);
-        long price = reservation.getCourt().getSurface().getPricePerMinute();
-        if (!(multiplier > 0) || !(durationInMinutes > 0) || !(price > 0)){
-            log.error("Cannot calculate total price: multiplier:"+multiplier +
-                    " duration:"+ durationInMinutes + " price:"+price);
-            throw new ArithmeticException("Cannot calculate price");
-        }
-        reservation.setPrice(price * multiplier * durationInMinutes);
-        return reservation;
     }
     
     private void validateTimeProperties(ReservationDTO reservation, Long excludeId){
@@ -154,9 +139,8 @@ public class ReservationServiceImpl implements ReservationService {
 
         log.info("Creating reservation:");
         repository.save(entity);
-        var pricedEntity = calculateCost(entity);
-        log.info("Created:" + pricedEntity);
-        return mapper.toDto(pricedEntity);
+        log.info("Created:" + entity);
+        return mapper.toDto(entity);
     }
 
     private <T> void trySetProperty(String newValue, String oldValue, Class<T> entityClass,
@@ -188,9 +172,8 @@ public class ReservationServiceImpl implements ReservationService {
                 GameType.class,"name", existingEntity::setGameType);
 
         if (StringUtils.hasLength(reservation.getCourt())
-                && reservation.getStartTime() != null && reservation.getEndTime() != null
-                && (!existingEntity.getStartTime().equals(reservation.getStartTime())
-                || !existingEntity.getEndTime().equals(reservation.getEndTime()))
+                && reservation.getStartTime() != null
+                && reservation.getEndTime() != null
         ) {
             validateTimeProperties(reservation, existingEntity.getId());
             existingEntity.setStartTime(reservation.getStartTime());
@@ -199,9 +182,8 @@ public class ReservationServiceImpl implements ReservationService {
 
         log.info("Updating reservation:");
         repository.save(existingEntity);
-        var pricedEntity = calculateCost(existingEntity);
-        log.info("Updated:" + pricedEntity);
-        return mapper.toDto(pricedEntity);
+        log.info("Updated:" + existingEntity);
+        return mapper.toDto(existingEntity);
     }
 
     @Transactional

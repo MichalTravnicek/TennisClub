@@ -67,17 +67,6 @@ class ReservationServiceTest {
     }
 
     @Test
-    public void testCalculationFailed(){
-        Court court = TestTool.createCourt("ReservationCourt1", "DirtAAA", 0L);
-        Reservation reservation = TestTool.createReservation(court,"Pepa","777147000");
-        GameType gameType = getTestGameType();
-        reservation.setGameType(gameType);
-        repository.save(reservation);
-        assertThrows(ArithmeticException.class,
-                () -> ReflectionTestUtils.invokeMethod(service,"calculateCost",reservation));
-    }
-
-    @Test
     public void createReservation() {
         Court court = TestTool.createCourt("ReservationCourt1", "DirtAAA", 100L);
         repository.save(court);

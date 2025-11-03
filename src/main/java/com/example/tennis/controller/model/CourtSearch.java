@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CourtSearch {
 
-    private String name;
+    private String court;
 
 }
