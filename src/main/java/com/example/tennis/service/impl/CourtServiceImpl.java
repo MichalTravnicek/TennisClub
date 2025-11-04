@@ -39,10 +39,10 @@ public class CourtServiceImpl implements CourtService {
 
     @Override
     public CourtDTO getCourt(CourtDTO court) {
-        return EntityMapper.INSTANCE.toDto(findByIdOrName(court));
+        return EntityMapper.INSTANCE.toDto(tryGetByIdOrName(court));
     }
 
-    private Court findByIdOrName(CourtDTO court){
+    private Court tryGetByIdOrName(CourtDTO court){
         try {
             if (court.getGlobalId() != null){
                 return repository.getByProperty(Court.class, "globalId", court.getGlobalId());
@@ -52,7 +52,7 @@ public class CourtServiceImpl implements CourtService {
             }
             throw new NotFoundException("No court id or name specified");
         } catch (NotFoundException e) {
-            throw new NotFoundException("Court: " + court.getGlobalId() + " " + court.getName() + " not found");
+            throw new NotFoundException("Court: " + court.getGlobalId() + " name:" + court.getName() + " not found");
         }
     }
 
@@ -118,7 +118,7 @@ public class CourtServiceImpl implements CourtService {
     @Transactional
     @Override
     public void deleteCourt(CourtDTO court) {
-        Court courtEntity = findByIdOrName(court);
+        Court courtEntity = tryGetByIdOrName(court);
         var reservations = search.getReservationsForCourt(court.getName());
         if (!reservations.isEmpty()){
            throw new ConflictException("Court: " + courtEntity.getName() +

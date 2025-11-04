@@ -13,15 +13,11 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -29,22 +25,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Object> handleNotFoundException(Exception ex, WebRequest request) {
-        final String parameters = request.getParameterMap().entrySet().stream().map(x -> x.getKey() + "=" +
-                Arrays.toString(x.getValue())).collect(Collectors.joining(";"));
-        var exception = new NoResourceFoundException(((ServletWebRequest) request).getHttpMethod(), parameters);
-        return handleNoResourceFoundException(exception, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+        logger.error(ex.getMessage());
+        final ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Resource not found");
+        return handleExceptionInternal(ex, detail, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<Object> handleConflictException(Exception ex, WebRequest request) {
-        System.err.println(ex.getMessage());
+        logger.error(ex.getMessage());
         final ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Conflict with existing item");
         return handleExceptionInternal(ex, detail, new HttpHeaders(), HttpStatus.CONFLICT, request);
     }
 
     @ExceptionHandler({BadArgumentException.class, ConstraintViolationException.class})
     public ResponseEntity<Object> handleBadArgumentException(Exception ex, WebRequest request) {
-        System.err.println(ex.getMessage());
+        logger.error(ex.getMessage());
         final ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Bad request");
         return handleExceptionInternal(ex, detail, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
@@ -75,7 +70,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     public static String getExceptionMessage(Exception ex){
         return switch (ex) {
-            case NoResourceFoundException e -> "";
             case HandlerMethodValidationException e -> {
                 var errors = e.getParameterValidationResults().stream()
                         .map(error->error.getMethodParameter().getParameterName()+":"+ error.getResolvableErrors().getFirst()
