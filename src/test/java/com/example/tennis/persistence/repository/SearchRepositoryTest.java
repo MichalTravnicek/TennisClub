@@ -86,7 +86,7 @@ class SearchRepositoryTest {
         Assertions.assertThat(reservations).isNotNull();
         Assertions.assertThat(reservations.size()).isEqualTo(3);
         Assertions.assertThat(reservations).extracting(Reservation::getCustomer).extracting(Customer::getPhone)
-                .containsExactly("777147999", "777147452", "777147888");
+                .containsExactly("777147452", "777147888", "777147999");
     }
 
     @Test

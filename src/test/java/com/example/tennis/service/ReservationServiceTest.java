@@ -75,6 +75,7 @@ class ReservationServiceTest {
                 null,"ReservationCourt1","Singles",
                 LocalDateTime.of(2025,12,12,0,0),
                 LocalDateTime.of(2025,12,15,0,0),
+                null,
                 "777111333", "FrantaJetel2", null);
 
         var result = service.createReservation(reservationRequest);
@@ -97,6 +98,7 @@ class ReservationServiceTest {
                 null,null,null,
                 LocalDateTime.of(2025,12,12,0,0),
                 LocalDateTime.of(2025,12,15,0,0),
+                null,
                 "777555333", "FrantaJetel299", null);
 
         assertThrows(BadArgumentException.class,
@@ -111,6 +113,7 @@ class ReservationServiceTest {
                 null,court.getName(),"Singles",
                 LocalDateTime.of(2025,6,12,0,0),
                 LocalDateTime.of(2025,6,15,0,0),
+                null,
                 "777555333", null, null);
 
         var result =  service.createReservation(reservationRequest);
@@ -124,6 +127,7 @@ class ReservationServiceTest {
                 null,"BadCourt","Singles",
                 LocalDateTime.of(2025,12,12,0,0),
                 LocalDateTime.of(2025,12,15,0,0),
+                null,
                 "777555333", "FrantaJetel299", null);
 
         assertThrows(BadArgumentException.class,
@@ -138,6 +142,7 @@ class ReservationServiceTest {
                 null,"ReservationCourt567","BadGametype",
                 LocalDateTime.of(2025,12,12,0,0),
                 LocalDateTime.of(2025,12,15,0,0),
+                null,
                 "777555333", "FrantaJetel299", null);
 
         assertThrows(BadArgumentException.class,
@@ -160,6 +165,7 @@ class ReservationServiceTest {
                 null,"ReservationCourt9","Singles",
                 LocalDateTime.of(2025,12,12,0,0),
                 LocalDateTime.of(2025,12,15,0,0),
+                null,
                 "777222333", "FrantaJetel299", null);
 
         assertThrows(ConflictException.class,
@@ -175,6 +181,7 @@ class ReservationServiceTest {
                 null,"ReservationCourt29","Singles",
                 LocalDateTime.of(2025,12,16,0,0),
                 LocalDateTime.of(2025,12,15,0,0),
+                null,
                 "777888333", "FrantaJetel899", null);
 
         assertThrows(BadArgumentException.class,
@@ -188,7 +195,7 @@ class ReservationServiceTest {
 
         ReservationDTO reservationRequest = new ReservationDTO(
                 null,"ReservationCourt59","Singles",
-                null, null,
+                null, null, null,
                 "777888555", "FrantaJetel599", null);
 
         assertThrows(BadArgumentException.class,
@@ -231,6 +238,7 @@ class ReservationServiceTest {
                 reservation.getGlobalId(),"ReservationCourt112","Doubles",
                 LocalDateTime.of(2025,12,16,0,0),
                 LocalDateTime.of(2025,12,19,0,0),
+                null,
                 "777111333", "FrantaJetel3", null);
 
         var result = service.updateReservation(reservationRequest);
@@ -268,6 +276,7 @@ class ReservationServiceTest {
                 reservation.getGlobalId(),court.getName(),"Singles",
                 LocalDateTime.of(2025,12,20,0,0),
                 LocalDateTime.of(2025,12,25,0,0),
+                null,
                 "777111333", null, null);
 
         assertThrows(ConflictException.class,
@@ -298,8 +307,7 @@ class ReservationServiceTest {
 
         ReservationDTO updateRequest = new ReservationDTO(
                 reservation.getGlobalId(),"ReservationCourt1235","Singles",
-                null,
-                null,
+                null, null, null,
                 "777111999", null, null);
 
         var result = service.updateReservation(updateRequest);
@@ -318,8 +326,7 @@ class ReservationServiceTest {
 
         ReservationDTO updateRequest = new ReservationDTO(
                 reservation.getGlobalId(), court.getName(),"Singles",
-                null,
-                null,
+                null, null, null,
                 null, null, null);
 
         var result = service.updateReservation(updateRequest);
@@ -337,7 +344,7 @@ class ReservationServiceTest {
         ReservationDTO updateRequest = new ReservationDTO(
                 reservation.getGlobalId(), null,"Singles",
                 LocalDateTime.of(2025,12,10,0,0),
-                null,
+                null, null,
                 null, null, null);
 
         var result = service.updateReservation(updateRequest);
@@ -356,6 +363,7 @@ class ReservationServiceTest {
                 reservation.getGlobalId(), null,"Singles",
                 null,
                 LocalDateTime.of(2025,12,18,0,0),
+                null,
                 null, null, null);
 
         var result = service.updateReservation(updateRequest);
@@ -387,6 +395,7 @@ class ReservationServiceTest {
                 reservation.getGlobalId(),"NonexistentCourt","Doubles",
                 LocalDateTime.of(2025,12,16,0,0),
                 LocalDateTime.of(2025,12,19,0,0),
+                null,
                 "777111333", "FrantaJetel3", null);
 
         assertThrows(BadArgumentException.class, () -> service.updateReservation(reservationRequest));
@@ -429,6 +438,7 @@ class ReservationServiceTest {
                 null,"ReservationCourt88",getTestGameType().getName(),
                 LocalDateTime.of(2025,12,12,0,0),
                 LocalDateTime.of(2025,12,15,0,0),
+                null,
                 "777555333", "FrantaJetel899", null);
 
         var resultSave = service.createReservation(reservationRequest);
@@ -457,6 +467,7 @@ class ReservationServiceTest {
                 null,"ReservationCourt246",getTestGameType().getName(),
                 LocalDateTime.of(2025,12,12,0,0),
                 LocalDateTime.of(2025,12,15,0,0),
+                null,
                 "777555333", "FrantaJetel399", null);
 
         var resultSave = service.createReservation(reservationRequest);
@@ -482,6 +493,7 @@ class ReservationServiceTest {
                 null,"ReservationCourt146",getTestGameType().getName(),
                 LocalDateTime.of(2005,12,12,0,0),
                 LocalDateTime.of(2005,12,15,0,0),
+                null,
                 "777555333", "FrantaJetel199", null);
 
         var resultSave = service.createReservation(reservationRequest);
@@ -509,6 +521,7 @@ class ReservationServiceTest {
                 null,"ReservationCourt146",getTestGameType().getName(),
                 LocalDateTime.of(2005,12,12,0,0),
                 LocalDateTime.of(2005,12,15,0,0),
+                null,
                 "777555333", "FrantaJetel199", null);
 
         var resultSave = service.createReservation(reservationRequest);

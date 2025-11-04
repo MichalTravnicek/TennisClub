@@ -55,8 +55,7 @@ public class TennisRepository implements TennisDAO{
         catch (NoResultException | IllegalArgumentException ex){
             log.debug(ex.getMessage());
             throw new NotFoundException(entityClass.getSimpleName() + " property:" + propertyName
-                    + " value:" + value + " not found \n" +
-                    ex.getMessage());
+                    + " value:" + value + " not found", ex.getMessage());
         }
     }
 

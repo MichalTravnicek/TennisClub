@@ -52,19 +52,19 @@ public class InitRunner implements CommandLineRunner {
 
         var nextYear = LocalDateTime.now().plusYears(1).getYear();
         var reservation = new ReservationDTO(UUID.fromString("2b8ca6b3-126e-4a4b-a6cc-41fccc00ce11"),"Court 1",
-                "Singles", null, null,
+                "Singles", null, null, null,
                 "777123456", null, null);
         reservation.setStartTime(LocalDateTime.of(nextYear, 5, 1, 0, 0));
         reservation.setEndTime(LocalDateTime.of(nextYear, 5, 2, 0, 0));
 
         var reservation2 = new ReservationDTO(UUID.fromString("54027dc9-a61d-4ce1-8616-7397595d00e3"),"Court 1",
-                "Doubles", null, null,
+                "Doubles", null, null, null,
                 "777123456", null, null);
         reservation2.setStartTime(LocalDateTime.of(nextYear, 6, 10, 0, 0));
         reservation2.setEndTime(LocalDateTime.of(nextYear, 6, 15, 0, 0));
 
         var reservation3 = new ReservationDTO(UUID.fromString("b423ccb2-0fb7-4df4-b510-55c89f682214"),"Court 1",
-                "Singles", null, null,
+                "Singles", null, null, null,
                 "777321987", null, null);
         reservation3.setStartTime(LocalDateTime.of(nextYear, 7, 12, 0, 0));
         reservation3.setEndTime(LocalDateTime.of(nextYear, 7, 14, 0, 0));

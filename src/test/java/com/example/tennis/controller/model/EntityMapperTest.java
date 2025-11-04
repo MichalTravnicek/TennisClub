@@ -42,7 +42,8 @@ class EntityMapperTest {
         ReservationDTO reservationRequest = new ReservationDTO(
                 null,"ReservationCourt1","Singles",
                 LocalDateTime.of(2025,12,12,0,0),
-                LocalDateTime.of(2025,12,15,0,0),"777111222", "FrantaJetel",null);
+                LocalDateTime.of(2025,12,15,0,0),
+                null, "777111222", "FrantaJetel",null);
         var result = EntityMapper.INSTANCE.toEntity(reservationRequest);
         System.err.println(result);
         Assertions.assertThat(result).isNotNull();

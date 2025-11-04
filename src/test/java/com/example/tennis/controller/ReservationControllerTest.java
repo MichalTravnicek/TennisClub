@@ -1,5 +1,7 @@
 package com.example.tennis.controller;
 
+import com.example.tennis.controller.model.CourtSearch;
+import com.example.tennis.controller.model.PhoneSearch;
 import com.example.tennis.controller.model.ReservationDTO;
 import com.example.tennis.service.ReservationService;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -21,8 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -64,6 +65,69 @@ class ReservationControllerTest {
     }
 
     @Test
+    void getReservationsByCourt_ShouldReturnListOfReservations() throws Exception {
+        ReservationDTO dto1 = new ReservationDTO();
+        dto1.setGlobalId(UUID.randomUUID());
+        ReservationDTO dto2 = new ReservationDTO();
+        dto2.setGlobalId(UUID.randomUUID());
+        List<ReservationDTO> allReservations = Arrays.asList(dto1, dto2);
+        CourtSearch search = new CourtSearch();
+        search.setCourt("SomeCourt");
+
+        when(service.getAllReservationsForCourt(search)).thenReturn(allReservations);
+
+        mockMvc.perform(post(ReservationController.BASE_URL + "/by-court")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(search)))
+
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(allReservations)));
+    }
+
+    @Test
+    void getReservationsByCourt_BadRequestWhenMissingCourt() throws Exception {
+        CourtSearch search = new CourtSearch();
+
+        mockMvc.perform(post(ReservationController.BASE_URL + "/by-court")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(search)))
+
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getReservationsByPhone_ShouldReturnListOfReservations() throws Exception {
+        ReservationDTO dto1 = new ReservationDTO();
+        dto1.setGlobalId(UUID.randomUUID());
+        ReservationDTO dto2 = new ReservationDTO();
+        dto2.setGlobalId(UUID.randomUUID());
+        List<ReservationDTO> allReservations = Arrays.asList(dto1, dto2);
+        PhoneSearch search = new PhoneSearch();
+        search.setPhone("777123456");
+
+        when(service.getAllReservationsForPhone(search)).thenReturn(allReservations);
+
+        mockMvc.perform(post(ReservationController.BASE_URL + "/by-phone")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(search)))
+
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(allReservations)));
+    }
+
+    @Test
+    void getReservationsByPhone_BadRequestWhenInvalidPhone() throws Exception {
+        PhoneSearch search = new PhoneSearch();
+        search.setPhone("ZZZ123456");
+
+        mockMvc.perform(post(ReservationController.BASE_URL + "/by-phone")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(search)))
+
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void getReservationByUuid_WhenFound_ShouldReturnReservation() throws Exception {
         UUID uuid = UUID.randomUUID();
         ReservationDTO dto = new ReservationDTO();
@@ -80,8 +144,16 @@ class ReservationControllerTest {
 
     @Test
     void createReservation_ShouldReturnCreatedReservationAndStatusCreated() throws Exception {
-        ReservationDTO requestDto = new ReservationDTO();
-        requestDto.setCustomer("Pavel Prochazka");
+        var request = """
+                            {
+                              "court": "Court 1",
+                              "gameType": "Singles",
+                              "startTime": "2029-09-25 00:00:00",
+                              "endTime": "2029-09-26 00:00:00",
+                              "phone": "777321987",
+                              "customer": "Pavel Prochazka"
+                            }
+                            """;
         ReservationDTO createdDto = new ReservationDTO();
         createdDto.setGlobalId(UUID.randomUUID());
         createdDto.setCustomer("Pavel Prochazka");
@@ -90,13 +162,48 @@ class ReservationControllerTest {
 
         mockMvc.perform(post(ReservationController.BASE_URL + "/create")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto)))
+                        .content(request))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(objectMapper.writeValueAsString(createdDto)));
     }
 
     @Test
-    void updateReservation_WhenSuccessful_ShouldReturnStatusNoContent() throws Exception {
+    void createReservation_BadRequestWhenMissingArguments() throws Exception {
+        var request = """
+                            {
+                              "court": "Court 1",
+                              "gameType": "Singles",
+                              "phone": "777321987",
+                              "customer": "Pavel Prochazka"
+                            }
+                            """;
+        mockMvc.perform(post(ReservationController.BASE_URL + "/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createReservation_BadRequestWhenInvalidPhone() throws Exception {
+        var request = """
+                            {
+                              "court": "Court 1",
+                              "gameType": "Singles",
+                              "startTime": "2029-09-25 00:00:00",
+                              "endTime": "2029-09-26 00:00:00",
+                              "phone": "XXX321987",
+                              "customer": "Pavel Prochazka"
+                            }
+                            """;
+
+        mockMvc.perform(post(ReservationController.BASE_URL + "/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateReservation_WhenSuccessful_ShouldReturnStatusOk() throws Exception {
         ReservationDTO requestDto = new ReservationDTO();
         requestDto.setGlobalId(UUID.randomUUID());
         requestDto.setCustomer("Pavel Prochazka");
@@ -112,13 +219,12 @@ class ReservationControllerTest {
         mockMvc.perform(put(ReservationController.BASE_URL + "/update")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
     }
 
     @Test
     void updateReservation_WhenNotFound_ShouldReturnStatusBadRequest() throws Exception {
         ReservationDTO requestDto = new ReservationDTO();
-        requestDto.setGlobalId(UUID.randomUUID());
 
         mockMvc.perform(put(ReservationController.BASE_URL + "/update")
                         .contentType(MediaType.APPLICATION_JSON)

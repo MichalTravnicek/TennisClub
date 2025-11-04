@@ -40,7 +40,7 @@ public class SearchRepository implements SearchDAO{
     public List<Reservation> getReservationsForCourt(@Nonnull String courtName){
         return entityManager.createQuery("SELECT r FROM Reservation r " +
                         "WHERE (r.court.name = :courtName) " +
-                        "ORDER BY r.startTime ASC", Reservation.class)
+                        "ORDER BY r.created ASC", Reservation.class)
                 .setParameter("courtName", courtName)
                 .getResultList();
     }
