@@ -26,6 +26,6 @@ public class GameType {
 
     @NotNull
     @Column(name = "PRICE_MULTIPLIER")
-    private float priceMultiplier;
+    private double priceMultiplier;
 
 }

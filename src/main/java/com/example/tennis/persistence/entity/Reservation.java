@@ -35,7 +35,7 @@ public class Reservation extends BaseEntity{
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    public Float getPrice(){
+    public Double getPrice(){
         if (startTime == null || endTime == null || gameType == null || court == null){
             return null;
         }

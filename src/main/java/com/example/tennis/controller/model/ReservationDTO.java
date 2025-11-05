@@ -42,6 +42,6 @@ public class ReservationDTO {
 
     private String customer;
 
-    private Float price;
+    private Double price;
 
 }
