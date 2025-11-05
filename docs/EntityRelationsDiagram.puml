@@ -1,0 +1,72 @@
+@startuml TennisClub Entity relations diagram
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+' Base Entity
+abstract class BaseEntity {
+    -id: Long
+    -global_id: UUID
+    -created: LocalDateTime
+    -deleted: LocalDateTime
+}
+
+' Customer Entity
+class Customer {
+    -name: String {NotNull}
+    -phone: String {NotNull, Unique, Pattern}
+}
+
+' GameType Entity
+class GameType {
+    -id: Long {Id, Generated}
+    -name: String {NotNull}
+    -priceMultiplier: double {NotNull}
+    +getId(): Long
+    +getName(): String
+    +getPriceMultiplier(): double
+}
+
+' Surface Entity
+class Surface {
+    -name: String {NotNull, Unique, Size(1-50)}
+    -pricePerMinute: Long {NotNull}
+}
+
+' Court Entity
+class Court {
+    -name: String {Unique}
+}
+
+' Reservation Entity
+class Reservation {
+    -startTime: LocalDateTime
+    -endTime: LocalDateTime
+    +getPrice(): Double
+}
+
+' Inheritance relationships
+BaseEntity <|-- Customer
+BaseEntity <|-- Surface
+BaseEntity <|-- Court
+BaseEntity <|-- Reservation
+
+' Association relationships
+Court "1" --> "0..*" Reservation : has
+Customer "1" --> "0..*" Reservation : makes
+GameType "1" --> "0..*" Reservation : defines
+Surface "1" --> "0..*" Court : of type
+
+' Notes
+note right of GameType
+  Read-only entity
+  Immutable
+  No soft delete
+end note
+
+note right of Reservation
+  Price calculation:
+  duration * gameType.priceMultiplier * court.surface.pricePerMinute
+end note
+
+@enduml
