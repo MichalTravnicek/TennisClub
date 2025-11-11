@@ -1,6 +1,8 @@
 package com.example.tennis.controller;
 
 import com.example.tennis.persistence.exception.NotFoundException;
+import com.example.tennis.security.AuthenticationConfig;
+import com.example.tennis.security.SecurityConfig;
 import com.example.tennis.service.exception.BadArgumentException;
 import com.example.tennis.service.exception.ConflictException;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -71,19 +74,31 @@ class DummyController {
     public void throwUnknownException() throws Exception {
         throw new Exception("Something unexpected happened");
     }
+
+    @GetMapping("/test-empty-exception")
+    public void throwEmptyException() throws Exception {
+        throw new Exception();
+    }
 }
 
 @WebMvcTest(DummyController.class)
 @AutoConfigureMockMvc(printOnlyOnFailure = false)
-@Import(GlobalExceptionHandler.class)
+@Import({JwtService.class, SecurityConfig.class, AuthenticationConfig.class})
 public class GlobalExceptionHandlerTest {
+
+    String validToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTc2M" +
+            "jM2MjczNCwiZXhwIjoxNzY1OTYyNzM0fQ.afeaizQkDms8GKn4CeGXpjNiJHgn29j_qsOrh8r-G0k";
+
+    private MockHttpServletRequestBuilder tokenGet(String uri, String token){
+        return get(uri).header("Authorization", "Bearer " + token);
+    }
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
     public void handleNotFoundException_ShouldReturnStatusNotFoundAndProblemDetail() throws Exception {
-        mockMvc.perform(get("/test-not-found"))
+        mockMvc.perform(tokenGet("/test-not-found", validToken))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.type").value("ReservationsApi-V1"))
                 .andExpect(jsonPath("$.status").value(404))
@@ -92,7 +107,7 @@ public class GlobalExceptionHandlerTest {
 
     @Test
     public void handleHandlerMethodValidationException_ShouldReturnStatusBadRequest() throws Exception {
-        mockMvc.perform(get("/test-handler-exception"))
+        mockMvc.perform(tokenGet("/test-handler-exception", validToken))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.type").value("ReservationsApi-V1"))
@@ -102,7 +117,7 @@ public class GlobalExceptionHandlerTest {
 
     @Test
     public void handleMethodArgumentNotValidException_ShouldReturnStatusBadRequest() throws Exception {
-        mockMvc.perform(get("/test-method-argument-exception"))
+        mockMvc.perform(tokenGet("/test-method-argument-exception",validToken))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.type").value("ReservationsApi-V1"))
@@ -134,13 +149,22 @@ public class GlobalExceptionHandlerTest {
 
     @Test
     public void handleUnknownException_ShouldReturnStatusInternalServerErrorAndProblemDetail() throws Exception {
-        mockMvc.perform(get("/test-unknown-exception"))
+        mockMvc.perform(tokenGet("/test-unknown-exception",validToken))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.type").value("ReservationsApi-V1"))
                 .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.detail").value("Internal server error"))
                 .andExpect(jsonPath("$.exception").value("Exception"))
                 .andExpect(jsonPath("$.message").value("Something unexpected happened"));
+    }
+
+    @Test
+    public void handleEmptyException_ShouldReturnStatusInternalServerErrorAndProblemDetail() throws Exception {
+        mockMvc.perform(tokenGet("/test-unknown-exception",validToken))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.type").value("ReservationsApi-V1"))
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.detail").value("Internal server error"));
     }
 
     @Test

@@ -10,6 +10,7 @@ import com.example.tennis.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 @Component
 @ConditionalOnProperty("tennis.init.data")
+@Profile("!test")
 @RequiredArgsConstructor
 public class InitRunner implements CommandLineRunner {
 

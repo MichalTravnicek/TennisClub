@@ -1,5 +1,6 @@
 package com.example.tennis.controller;
 
+import com.example.tennis.controller.security.UnauthorizedException;
 import com.example.tennis.persistence.exception.NotFoundException;
 import com.example.tennis.service.exception.BadArgumentException;
 import com.example.tennis.service.exception.ConflictException;
@@ -9,6 +10,9 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -21,7 +25,6 @@ import java.net.URI;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Object> handleNotFoundException(Exception ex, WebRequest request) {
@@ -37,11 +40,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, detail, new HttpHeaders(), HttpStatus.CONFLICT, request);
     }
 
-    @ExceptionHandler({BadArgumentException.class, ConstraintViolationException.class})
+    @ExceptionHandler({BadArgumentException.class, AuthenticationException.class, ConstraintViolationException.class})
     public ResponseEntity<Object> handleBadArgumentException(Exception ex, WebRequest request) {
         logger.error(ex.getMessage());
         final ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Bad request");
         return handleExceptionInternal(ex, detail, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Object> handleUnauthorizedException(Exception ex, WebRequest request) {
+        final ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        return handleExceptionInternal(ex, detail, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<Object> handleForbiddenException(Exception ex, WebRequest request) {
+        final ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Forbidden");
+        return handleExceptionInternal(ex, detail, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
     @ExceptionHandler(Exception.class)
@@ -81,7 +96,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         error -> error.getField() + "=" + error.getRejectedValue() + ":" + error.getDefaultMessage()).toList();
                 yield errors.toString();
             }
-            case Exception e -> e.getMessage(); // in production we can suppress that (ie. internal exception)
+            case Exception e -> e.getMessage(); // in production we would suppress internal exceptions details
         };
     }
 
@@ -90,8 +105,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (body instanceof ProblemDetail detail){
             detail.setType(URI.create("ReservationsApi-V1"));
         }
-        return new ResponseEntity(body, headers, statusCode);
+        return new ResponseEntity<>(body, headers, statusCode);
     }
-
 }
-

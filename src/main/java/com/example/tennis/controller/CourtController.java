@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(CourtController.BASE_URL)
+@PreAuthorize("hasAnyRole('USER','ADMIN')")
 public class CourtController {
 
     private final CourtService service;
@@ -63,6 +65,7 @@ public class CourtController {
 
     // CREATE *****************************
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(tags = "2 - Create",
             summary = "Create court",
             description = "Creates court from supplied values"
@@ -114,6 +117,7 @@ public class CourtController {
 
     // UPDATE *****************************
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(tags = "3 - Update",
             summary = "Update court",
             description = "Updates court from supplied values"
@@ -153,6 +157,7 @@ public class CourtController {
 
     // DELETE *****************************
     @DeleteMapping("/delete")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(tags = "4 - Delete",
             summary = "Delete court",
             description = "Deletes court by id"

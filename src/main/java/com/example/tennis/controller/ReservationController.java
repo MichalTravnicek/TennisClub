@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(ReservationController.BASE_URL)
+@PreAuthorize("hasAnyRole('USER','ADMIN')")
 public class ReservationController {
 
     private final ReservationService service;
@@ -184,6 +186,7 @@ public class ReservationController {
     }
 
     // UPDATE *****************************
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(tags = "3 - Update",
             summary = "Update reservation",
@@ -212,6 +215,7 @@ public class ReservationController {
     }
 
     // DELETE *****************************
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete")
     @Operation(tags = "4 - Delete",
             summary = "Delete reservation",
